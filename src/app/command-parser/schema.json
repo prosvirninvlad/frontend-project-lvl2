@@ -1,0 +1,17 @@
+{
+  "arguments": "<filepath1> <filepath2>",
+  "options": [
+    {
+      "flags": "-f, --format [type]",
+      "description": "output format"
+    },
+    {
+      "flags": "-h, --help",
+      "description": "output usage information"
+    },
+    {
+      "flags": "-V, --version",
+      "description": "output the version number"
+    }
+  ]
+}

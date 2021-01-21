@@ -1,2 +1,7 @@
 #!/usr/bin/env node
-require('./src').main(process.argv);
+const package = require('./package.json');
+require('./src').main({
+  description: package.description,
+  version: package.version,
+  argv: process.argv
+});
