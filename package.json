@@ -1,0 +1,17 @@
+{
+  "name": "@hexlet/code",
+  "version": "1.0.0",
+  "main": "./src/index.js",
+  "repository": "https://github.com/prosvirninvlad/frontend-project-lvl2.git",
+  "description": "Compares two configuration files and shows a difference.",
+  "author": "Vladislav Prosvirnin <v.prosvirnin@ntechlab.com>",
+  "license": "MIT",
+  "private": true,
+  "devDependencies": {
+    "@types/jest": "^26.0.20",
+    "jest": "^26.6.3"
+  },
+  "scripts": {
+    "test": "jest"
+  }
+}
