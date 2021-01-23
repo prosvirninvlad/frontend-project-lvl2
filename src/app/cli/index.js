@@ -1,10 +1,10 @@
-function createCli({ version, io }) {
-  function printHelp(help) {
-    io.write(help);
+function createCli({ manifest, console }) {
+  function printHelp() {
+    console.log(manifest.description);
   }
 
   function printVersion() {
-    io.write(version);
+    console.log(manifest.version);
   }
 
   return { printHelp, printVersion };
