@@ -1,10 +1,20 @@
 const { Mutation } = require('./mutation');
 
+const MutationStr = {
+  [Mutation.ADDED]: addedStr,
+  [Mutation.REMOVED]: removedStr,
+  [Mutation.UPDATED]: updatedStr,
+  [Mutation.UNCHANGED]: unchangedStr
+};
+
+function genDiff(objectA, objectB) {
+  const changes = Object.entries(compareObjects(objectA, objectB));
+  const strings = changes.map(([key, item]) => MutationStr[item.mutation](key, item)).join('\n');
+  return `{${strings && `\n${strings}\n`}}`;
+}
+
 function compareObjects(objectA, objectB) {
-  return assign(
-    compareObjectAwithObjectB(objectA, objectB),
-    compareObjectBwithObjectA(objectB, objectA)
-  );
+  return assign(compareObjectAwithObjectB(objectA, objectB), compareObjectBwithObjectA(objectB, objectA));
 }
 
 function compareObjectAwithObjectB(objectA, objectB) {
@@ -22,9 +32,7 @@ function compareObjectAwithObjectB(objectA, objectB) {
 
 function compareObjectBwithObjectA(objectB, objectA) {
   return Object.keys(objectB).reduce((mutations, key) => {
-    return has(objectA, key)
-      ? mutations
-      : assign(mutations, { [key]: added(get(objectB, key)) });
+    return has(objectA, key) ? mutations : assign(mutations, { [key]: added(get(objectB, key)) });
   }, {});
 }
 
@@ -56,4 +64,20 @@ function unchanged(oldValue) {
   return { mutation: Mutation.UNCHANGED, oldValue };
 }
 
-module.exports = { compareObjects };
+function addedStr(key, mutation) {
+  return `  + ${key}: ${mutation.newValue}`;
+}
+
+function removedStr(key, mutation) {
+  return `  - ${key}: ${mutation.oldValue}`;
+}
+
+function updatedStr(key, mutation) {
+  return `${removedStr(key, mutation)}\n${addedStr(key, mutation)}`;
+}
+
+function unchangedStr(key, mutation) {
+  return `    ${key}: ${mutation.oldValue}`;
+}
+
+module.exports = { genDiff, compareObjects };

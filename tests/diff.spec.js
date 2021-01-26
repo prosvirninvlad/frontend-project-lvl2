@@ -1,4 +1,4 @@
-const { compareObjects } = require('../src/diff');
+const { compareObjects, genDiff } = require('../src/diff');
 const { Mutation } = require('../src/diff/mutation');
 
 describe('tests/diff.spec.js', () => {
@@ -7,18 +7,18 @@ describe('tests/diff.spec.js', () => {
       const objectA = {};
       const objectB = {};
 
-      const difference = compareObjects(objectA, objectB);
+      const result = compareObjects(objectA, objectB);
 
-      expect(difference).toStrictEqual({});
+      expect(result).toStrictEqual({});
     });
 
     test('Определяется отсутствие разницы между двумя объектами с одним идентичным свойством', () => {
       const objectA = { propertyA: 'valueA' };
       const objectB = { propertyA: 'valueA' };
 
-      const difference = compareObjects(objectA, objectB);
+      const result = compareObjects(objectA, objectB);
 
-      expect(difference).toStrictEqual({
+      expect(result).toStrictEqual({
         propertyA: {
           oldValue: 'valueA',
           mutation: Mutation.UNCHANGED
@@ -30,9 +30,9 @@ describe('tests/diff.spec.js', () => {
       const objectA = { propertyA: 'valueA', propertyB: 'valueB' };
       const objectB = { propertyA: 'valueA', propertyB: 'valueB' };
 
-      const difference = compareObjects(objectA, objectB);
+      const result = compareObjects(objectA, objectB);
 
-      expect(difference).toStrictEqual({
+      expect(result).toStrictEqual({
         propertyA: {
           oldValue: 'valueA',
           mutation: Mutation.UNCHANGED
@@ -342,6 +342,187 @@ describe('tests/diff.spec.js', () => {
           mutation: Mutation.UPDATED
         }
       });
+    });
+  });
+
+  describe('Создание текстового результата сравнения двух объектов', () => {
+    test('Создаётся текстовый результат сравнения двух пустых объектов', () => {
+      const objectA = {};
+      const objectB = {};
+
+      const result = genDiff(objectA, objectB);
+
+      expect(result).toBe('{}');
+    });
+
+    test('Создаётся текстовый результат сравнения двух объектов с одним идентичным свойством', () => {
+      const objectA = { propertyA: 'valueA' };
+      const objectB = { propertyA: 'valueA' };
+
+      const result = genDiff(objectA, objectB);
+
+      expect(result).toBe('{\n    propertyA: valueA\n}');
+    });
+
+    test('Создаётся текстовый результат сравнения двух объектов с двумя идентичными свойствами', () => {
+      const objectA = { propertyA: 'valueA', propertyB: 'valueB' };
+      const objectB = { propertyA: 'valueA', propertyB: 'valueB' };
+
+      const result = genDiff(objectA, objectB);
+
+      expect(result).toBe('{\n    propertyA: valueA\n    propertyB: valueB\n}');
+    });
+
+    test('Создаётся текстовый результат добавления одного нового свойства относительно пустого объекта', () => {
+      const objectA = {};
+      const objectB = { propertyA: 'valueA' };
+
+      const result = genDiff(objectA, objectB);
+
+      expect(result).toBe('{\n  + propertyA: valueA\n}');
+    });
+
+    test('Создаётся текстовый результат добавления двух новых свойств относительно пустого объекта', () => {
+      const objectA = {};
+      const objectB = { propertyA: 'valueA', propertyB: 'valueB' };
+
+      const result = genDiff(objectA, objectB);
+
+      expect(result).toBe('{\n  + propertyA: valueA\n  + propertyB: valueB\n}');
+    });
+
+    test('Создаётся текстовый результат добавления одного нового свойства относительно непустого объекта', () => {
+      const objectA = { propertyA: 'valueA' };
+      const objectB = { propertyA: 'valueA', propertyB: 'valueB' };
+
+      const result = genDiff(objectA, objectB);
+
+      expect(result).toBe('{\n    propertyA: valueA\n  + propertyB: valueB\n}');
+    });
+
+    test('Создаётся текстовый результат добавления двух новых свойств относительно непустого объекта', () => {
+      const objectA = { propertyA: 'valueA' };
+      const objectB = { propertyA: 'valueA', propertyB: 'valueB', propertyC: 'valueC' };
+
+      const result = genDiff(objectA, objectB);
+
+      expect(result).toBe('{\n    propertyA: valueA\n  + propertyB: valueB\n  + propertyC: valueC\n}');
+    });
+
+    test('Создаётся текстовый результат удаления одного свойства относительно пустого объекта', () => {
+      const objectA = { propertyA: 'valueA' };
+      const objectB = {};
+
+      const result = genDiff(objectA, objectB);
+
+      expect(result).toBe('{\n  - propertyA: valueA\n}');
+    });
+
+    test('Создаётся текстовый результат удаления двух свойств относительно пустого объекта', () => {
+      const objectA = { propertyA: 'valueA', propertyB: 'valueB' };
+      const objectB = {};
+
+      const result = genDiff(objectA, objectB);
+
+      expect(result).toBe('{\n  - propertyA: valueA\n  - propertyB: valueB\n}');
+    });
+
+    test('Создаётся текстовый результат удаления одного свойства относительно непустого объекта', () => {
+      const objectA = { propertyA: 'valueA', propertyB: 'valueB' };
+      const objectB = { propertyA: 'valueA' };
+
+      const result = genDiff(objectA, objectB);
+
+      expect(result).toBe('{\n    propertyA: valueA\n  - propertyB: valueB\n}');
+    });
+
+    test('Создаётся текстовый результат удаления двух свойств относительно непустого объекта', () => {
+      const objectA = { propertyA: 'valueA', propertyB: 'valueB', propertyC: 'valueC' };
+      const objectB = { propertyA: 'valueA' };
+
+      const result = genDiff(objectA, objectB);
+
+      expect(result).toBe('{\n    propertyA: valueA\n  - propertyB: valueB\n  - propertyC: valueC\n}');
+    });
+
+    test('Создаётся текстовый результат обновления единственного свойства объекта', () => {
+      const objectA = { propertyA: 'oldValueA' };
+      const objectB = { propertyA: 'newValueA' };
+
+      const result = genDiff(objectA, objectB);
+
+      expect(result).toBe('{\n  - propertyA: oldValueA\n  + propertyA: newValueA\n}');
+    });
+
+    test('Создаётся текстовый результат обновления единственного свойства объекта значением другого типа', () => {
+      const objectA = { propertyA: 'oldValueA' };
+      const objectB = { propertyA: 0 };
+
+      const result = genDiff(objectA, objectB);
+
+      expect(result).toBe('{\n  - propertyA: oldValueA\n  + propertyA: 0\n}');
+    });
+
+    test('Создаётся текстовый результат обновления двух свойств объекта', () => {
+      const objectA = { propertyA: 'oldValueA', propertyB: 'oldValueB' };
+      const objectB = { propertyA: 'newValueA', propertyB: 'newValueB' };
+
+      const result = genDiff(objectA, objectB);
+
+      expect(result).toBe(
+        '{\n  - propertyA: oldValueA\n  + propertyA: newValueA\n  - propertyB: oldValueB\n  + propertyB: newValueB\n}'
+      );
+    });
+
+    test('Создаётся текстовый результат обновления двух свойств объекта значениями другого типа', () => {
+      const objectA = { propertyA: 'oldValueA', propertyB: 'oldValueB' };
+      const objectB = { propertyA: 0, propertyB: 1 };
+
+      const result = genDiff(objectA, objectB);
+
+      expect(result).toBe(
+        '{\n  - propertyA: oldValueA\n  + propertyA: 0\n  - propertyB: oldValueB\n  + propertyB: 1\n}'
+      );
+    });
+
+    test('Создаётся текстовый результат обновления одного из двух свойств объекта', () => {
+      const objectA = { propertyA: 'oldValueA', propertyB: 'oldValueB' };
+      const objectB = { propertyA: 'oldValueA', propertyB: 'newValueB' };
+
+      const result = genDiff(objectA, objectB);
+
+      expect(result).toBe('{\n    propertyA: oldValueA\n  - propertyB: oldValueB\n  + propertyB: newValueB\n}');
+    });
+
+    test('Создаётся текстовый результат обновления одного из двух свойств объекта значением другого типа', () => {
+      const objectA = { propertyA: 'oldValueA', propertyB: 'oldValueB' };
+      const objectB = { propertyA: 'oldValueA', propertyB: 0 };
+
+      const result = genDiff(objectA, objectB);
+
+      expect(result).toBe('{\n    propertyA: oldValueA\n  - propertyB: oldValueB\n  + propertyB: 0\n}');
+    });
+
+    test('Создаётся текстовый результат обновления двух из трёх свойств объекта', () => {
+      const objectA = { propertyA: 'oldValueA', propertyB: 'oldValueB', propertyC: 'oldValueC' };
+      const objectB = { propertyA: 'oldValueA', propertyB: 'newValueB', propertyC: 'newValueC' };
+
+      const result = genDiff(objectA, objectB);
+
+      expect(result).toBe(
+        '{\n    propertyA: oldValueA\n  - propertyB: oldValueB\n  + propertyB: newValueB\n  - propertyC: oldValueC\n  + propertyC: newValueC\n}'
+      );
+    });
+
+    test('Создаётся текстовый результат обновления двух из трёх свойств объекта значениями другого типа', () => {
+      const objectA = { propertyA: 'oldValueA', propertyB: 'oldValueB', propertyC: 'oldValueC' };
+      const objectB = { propertyA: 'oldValueA', propertyB: 0, propertyC: 1 };
+
+      const result = genDiff(objectA, objectB);
+
+      expect(result).toBe(
+        '{\n    propertyA: oldValueA\n  - propertyB: oldValueB\n  + propertyB: 0\n  - propertyC: oldValueC\n  + propertyC: 1\n}'
+      );
     });
   });
 });
